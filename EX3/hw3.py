@@ -5,11 +5,6 @@ import matplotlib.pyplot as plt
 EPSILON = 1e-5
 
 
-# SCENE ONE -  Plane , set_material() , PointLight() , render_scane
-
-# !! DO NOT CHANGE ARGS !!
-
-
 def render_scene(camera, ambient, lights, objects, screen_size, max_depth):
     width, height = screen_size
     ratio = float(width) / height
@@ -46,13 +41,10 @@ def render_scene(camera, ambient, lights, objects, screen_size, max_depth):
 
 # Write your own objects and lights
 # TODO
-# !! DO NOT CHANGE ARGS !!
 def your_own_scene():
     camera = np.array([0, 0, 1])
     lights = []
     objects = []
     return camera, lights, objects
-
-
 
 # def get_diffuse(nearest_object,)
