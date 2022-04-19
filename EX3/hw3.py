@@ -2,7 +2,8 @@ from numpy import intersect1d
 from helper_classes import *
 import matplotlib.pyplot as plt
 
-EPSILON = 1e-5
+# EPSILON = 1e-5
+EPSILON = 0.01
 
 
 def render_scene(camera, ambient, lights, objects, screen_size, max_depth):
@@ -25,14 +26,17 @@ def render_scene(camera, ambient, lights, objects, screen_size, max_depth):
             nearest_object, min_distance = scene_ray.nearest_intersected_object(objects)
             if nearest_object is None:
                 continue
-            intersection_point = scene_ray.get_intersection_point(min_distance-EPSILON)
+            intersection_point = scene_ray.get_intersection_point(min_distance - EPSILON)
             # According to the last tip - shift the point in the direction on epsilon normal
             normal_to_surface = normalize(nearest_object.get_normal())
             if isinstance(nearest_object, Sphere):
                 normal_to_surface = normalize(intersection_point - nearest_object.center)
             # shifted_point = intersection_point + EPSILON * normal_to_surface
-            color = get_color(scene_ray, ambient, lights, objects,
-                              1, max_depth, normal_to_surface, intersection_point, nearest_object)
+            direction_to_eye = normalize(camera - intersection_point)
+
+            color = get_color(scene_ray, ambient, lights, objects, 1, max_depth, direction_to_eye, camera,
+                              normal_to_surface, intersection_point,
+                              nearest_object)
 
             # We clip the values between 0 and 1 so all pixel values will make sense.
             image[i, j] = np.clip(color, 0, 1)

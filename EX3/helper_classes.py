@@ -1,7 +1,7 @@
 import numpy as np
 from abc import abstractmethod
 
-EPSILON = 1e-5
+EPSILON = 0.01
 
 
 # This function gets a vector and returns its normalized form.
@@ -275,21 +275,27 @@ def get_diffuse_color(nearest_object, normal_to_surface, ray_to_light):
     return nearest_object.diffuse * (np.dot(normal_to_surface, normalize(ray_to_light.direction)))
 
 
-def get_specular_color(nearest_object, normal_to_surface, ray_to_light):
-    reflected_light_vector = reflected(normalize(-ray_to_light.direction), normal_to_surface)
+def get_specular_color(nearest_object, normal_to_surface, ray_to_light, ray_to_eye):
+    reflected_light_vector = reflected(normalize(ray_to_light.direction), normal_to_surface)
     return nearest_object.specular * (
-            np.dot(-ray_to_light.direction, reflected_light_vector) ** nearest_object.shininess)
+            np.dot(ray_to_eye, reflected_light_vector) ** nearest_object.shininess)
+#
+# def get_specular_color(nearest_object, normal_to_surface, ray_to_light):
+#     reflected_light_vector = reflected(normalize(-ray_to_light.direction), normal_to_surface)
+#     return nearest_object.specular * (
+#             np.dot(-ray_to_light.direction, reflected_light_vector) ** nearest_object.shininess)
 
 
-def get_color(curr_ray, ambient, lights, objects, depth_level, max_depth, normal_to_surface, intersection_point,
-              nearest_object):
+def get_color(curr_ray, ambient, lights, objects, depth_level, max_depth, direction_to_eye, camera,
+              normal_to_surface,
+              intersection_point, nearest_object):
     color = np.zeros(3)
     # = obj_ambient*global_ambient=
     ambient = nearest_object.ambient * ambient
     sigma_clac = 0
     reflective_rec_calc = 0
     # color += ambient
-    normal_to_surface = nearest_object.get_normal()
+    # normal_to_surface = nearest_object.get_normal()
     if isinstance(nearest_object, Sphere):
         normal_to_surface = normalize(intersection_point - nearest_object.center)
     shifted_point = intersection_point + EPSILON * normal_to_surface
@@ -303,7 +309,7 @@ def get_color(curr_ray, ambient, lights, objects, depth_level, max_depth, normal
         else:
             diffuse = get_diffuse_color(nearest_object, normal_to_surface, ray_to_light)
 
-            specular = get_specular_color(nearest_object, normal_to_surface, ray_to_light)
+            specular = get_specular_color(nearest_object, normal_to_surface, ray_to_light, direction_to_eye)
             # as we do in the formula, ww multiply the diffuse and the specular in the intensity
             color += (diffuse + specular) * light.get_intensity(intersection_point)
 
@@ -324,9 +330,10 @@ def get_color(curr_ray, ambient, lights, objects, depth_level, max_depth, normal
     intersection_point = reflected_ray.get_intersection_point(min_distance_to_nearest - EPSILON)
     normal_to_surface = normalize(reflected_nearest_object.get_normal())
     # shifted_point = intersection_point + EPSILON * normal_to_surface
+    direction_to_eye = normalize(camera - intersection_point)
     # recreation call for the last term of the formula
     reflective_rec_calc += nearest_object.reflection * get_color(reflected_ray, ambient, lights, objects, depth_level +
-                                                                 1, max_depth,
+                                                                 1, max_depth, direction_to_eye, intersection_point,
                                                                  normal_to_surface, intersection_point,
                                                                  reflected_nearest_object)
 
