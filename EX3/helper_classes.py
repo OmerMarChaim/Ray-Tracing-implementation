@@ -46,21 +46,17 @@ class DirectionalLight(LightSource):
     def __init__(self, intensity, direction):
         super().__init__(intensity)
         self.direction = direction
-        # TODO
 
     # This function returns the ray that goes from the light source to a point
     def get_light_ray(self, intersection_point):
-        # TODO
         return Ray(intersection_point, self.direction)
 
     # This function returns the distance from a point to the light source
     def get_distance_from_light(self, intersection):
-        # TODO
         return np.inf
 
     # This function returns the light intensity at a point
     def get_intensity(self, intersection):
-        # TODO
         return self.intensity
 
 
@@ -122,11 +118,10 @@ class Ray:
     def nearest_intersected_object(self, objects):
         nearest_object = None
         min_distance = np.inf
-        # TODO
-        for object in objects:
-            distance, _ = object.intersect(self)
+        for curr_object in objects:
+            distance, _ = curr_object.intersect(self)
             if distance and distance < min_distance:
-                nearest_object = object
+                nearest_object = curr_object
                 min_distance = distance
 
         return nearest_object, min_distance
@@ -280,40 +275,42 @@ def get_diffuse_color(nearest_object, normal_to_surface, ray_to_light):
     return nearest_object.diffuse * (np.dot(normal_to_surface, normalize(ray_to_light.direction)))
 
 
-def get_specular_color(nearest_object, normal_to_surface, ray_to_light, ray_to_eye):
-    reflected_light_vector = reflected(normalize(ray_to_light.direction), normal_to_surface)
+def get_specular_color(nearest_object, normal_to_surface, ray_to_light):
+    reflected_light_vector = reflected(normalize(-ray_to_light.direction), normal_to_surface)
     return nearest_object.specular * (
-            np.dot(ray_to_eye, reflected_light_vector) ** nearest_object.shininess)
+            np.dot(-ray_to_light.direction, reflected_light_vector) ** nearest_object.shininess)
 
 
-def get_color(ray_to_object, ambient, lights, objects, depth_level, max_depth, direction_to_eye, camera,
-              normal_to_surface,
-              intersection_point, nearest_object):
+def get_color(curr_ray, ambient, lights, objects, depth_level, max_depth, normal_to_surface, intersection_point,
+              nearest_object):
     color = np.zeros(3)
-    # Ka*Ia === obj_ambient*global_ambient --- FIRST TERM
+    # = obj_ambient*global_ambient=
     ambient = nearest_object.ambient * ambient
-    color += ambient
-
+    sigma_clac = 0
+    reflective_rec_calc = 0
+    # color += ambient
+    normal_to_surface = nearest_object.get_normal()
+    if isinstance(nearest_object, Sphere):
+        normal_to_surface = normalize(intersection_point - nearest_object.center)
+    shifted_point = intersection_point + EPSILON * normal_to_surface
     for light in lights:
         # get the ray from the inter. point to light source
         ray_to_light = light.get_light_ray(intersection_point)
-        _, nearest_point_distance = ray_to_light.nearest_intersected_object(
-            objects)
-        intersection_to_light_distance = light.get_distance_from_light(
-            intersection_point)
+        _, nearest_point_distance = ray_to_light.nearest_intersected_object(objects)
+        intersection_to_light_distance = light.get_distance_from_light(intersection_point)
         if nearest_point_distance < intersection_to_light_distance:
             color += np.zeros(3)
         else:
             diffuse = get_diffuse_color(nearest_object, normal_to_surface, ray_to_light)
 
-            specular = get_specular_color(nearest_object, normal_to_surface, ray_to_light, direction_to_eye)
+            specular = get_specular_color(nearest_object, normal_to_surface, ray_to_light)
             # as we do in the formula, ww multiply the diffuse and the specular in the intensity
             color += (diffuse + specular) * light.get_intensity(intersection_point)
 
     if max_depth < depth_level + 1:
         return color
 
-    reflected_ray_direction = normalize(reflected(ray_to_object.direction, normal_to_surface))
+    reflected_ray_direction = normalize(reflected(curr_ray.direction, normal_to_surface))
 
     reflected_ray = Ray(intersection_point, reflected_ray_direction)
 
@@ -324,13 +321,13 @@ def get_color(ray_to_object, ambient, lights, objects, depth_level, max_depth, d
         # here we dont have any intersection
         return color
 
-    intersection_point = reflected_ray.get_intersection_point(min_distance_to_nearest)
+    intersection_point = reflected_ray.get_intersection_point(min_distance_to_nearest - EPSILON)
     normal_to_surface = normalize(reflected_nearest_object.get_normal())
-    shifted_point = intersection_point + EPSILON * normal_to_surface
-    direction_to_eye = normalize(camera - shifted_point)
+    # shifted_point = intersection_point + EPSILON * normal_to_surface
     # recreation call for the last term of the formula
-    color += nearest_object.reflection * get_color(reflected_ray, ambient, lights, objects, depth_level +
-                                                   1, max_depth, direction_to_eye, intersection_point,
-                                                   normal_to_surface, shifted_point,
-                                                   reflected_nearest_object)
-    return color
+    reflective_rec_calc += nearest_object.reflection * get_color(reflected_ray, ambient, lights, objects, depth_level +
+                                                                 1, max_depth,
+                                                                 normal_to_surface, intersection_point,
+                                                                 reflected_nearest_object)
+
+    return color + reflective_rec_calc
