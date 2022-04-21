@@ -1,7 +1,7 @@
 import numpy as np
 from abc import abstractmethod
 
-EPSILON = 0.01
+EPSILON = 0.00001
 
 
 # This function gets a vector and returns its normalized form.
@@ -279,8 +279,9 @@ def get_specular_color(nearest_object, normal_to_surface, ray_to_light, ray_to_e
     reflected_light_vector = reflected(normalize(ray_to_light.direction), normal_to_surface)
     return nearest_object.specular * (
             np.dot(ray_to_eye, reflected_light_vector) ** nearest_object.shininess)
-#
-# def get_specular_color(nearest_object, normal_to_surface, ray_to_light):
+
+
+# def get_specular_color(nearest_object, normal_to_surface, ray_to_light, ray_to_eye):
 #     reflected_light_vector = reflected(normalize(-ray_to_light.direction), normal_to_surface)
 #     return nearest_object.specular * (
 #             np.dot(-ray_to_light.direction, reflected_light_vector) ** nearest_object.shininess)
@@ -291,10 +292,9 @@ def get_color(curr_ray, ambient, lights, objects, depth_level, max_depth, direct
               intersection_point, nearest_object):
     color = np.zeros(3)
     # = obj_ambient*global_ambient=
-    ambient = nearest_object.ambient * ambient
-    sigma_clac = 0
+    ambient_color = nearest_object.ambient * ambient
     reflective_rec_calc = 0
-    # color += ambient
+    color += ambient_color
     # normal_to_surface = nearest_object.get_normal()
     if isinstance(nearest_object, Sphere):
         normal_to_surface = normalize(intersection_point - nearest_object.center)
