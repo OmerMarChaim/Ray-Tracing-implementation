@@ -22,7 +22,6 @@ def render_scene(camera, ambient, lights, objects, screen_size, max_depth):
             # define the ray with the origin and direction
             origin = normalize(pixel - camera)
             scene_ray = Ray(camera, origin)
-            # First search if there is intersection and the object that we intersect
             nearest_object, min_distance = scene_ray.nearest_intersected_object(objects)
             if nearest_object is None:
                 continue
@@ -31,41 +30,43 @@ def render_scene(camera, ambient, lights, objects, screen_size, max_depth):
             normal_to_surface = normalize(nearest_object.get_normal())
             if isinstance(nearest_object, Sphere):
                 normal_to_surface = normalize(intersection_point - nearest_object.center)
-            # direction_to_eye = normalize(camera - intersection_point)
 
             color = get_color(scene_ray, ambient, lights, objects, 1, max_depth, camera,
-                              normal_to_surface, intersection_point,nearest_object)
+                              normal_to_surface, intersection_point, nearest_object)
 
-            # We clip the values between 0 and 1 so all pixel values will make sense.
             image[i, j] = np.clip(color, 0, 1)
 
     return image
 
 
 # Write your own objects and lights
-# TODO
 def your_own_scene():
     camera = np.array([0, 0, 1])
     lights = []
     objects = []
-    sphere_a = Sphere([-0.5, 0.2, -1],0.5)
+    sphere_a = Sphere([-0.5, 0.2, -1], 0.5)
     sphere_a.set_material([1, 0, 0], [1, 0, 0], [0.3, 0.3, 0.3], 100, 1)
-    background = Plane([0,0,1], [0,0,-3])
+    background = Plane([0, 0, 1], [5, 5, -8])
     background.set_material([0.2, 0.2, 0.2], [0.2, 0.2, 0.2], [0.2, 0.2, 0.2], 1000, 0.5)
-    triangle = Triangle([1,-1,-2],[0,1,-1.5],[0,-1,-1])
-    triangle.set_material([1, 1, 0], [1, 1, 0], [0, 1, 0], 100, 0.5)
-    
-    plane = Plane([0,0,1], [0,0,-3])
+    # triangle = Triangle([1, -1, -2], [0, 1, -1.5], [0, -1, -1])
+    # triangle.set_material([1, 1, 0], [1, 1, 0], [0, 1, 0], 100, 0.5)
+    v_list = np.array([[-1, -1, -2], [1, -1, -2], [0, -1, -1], [0, 1, -1.5]])
+    f_list = np.array([[0, 2, 1], [0, 1, 3], [0, 2, 3], [1, 3, 2]])
+
+    mesh = Mesh(v_list, f_list)
+    mesh.set_material([0.3, 0.5, 1], [0.3, 0.5, 0.8], [0.3, 0.3, 0.3], 10, 0.5)
+    mesh.apply_materials_to_triangles()
+    plane = Plane([0, 0, 1], [0, 0, -3])
     plane.set_material([0, 0.5, 0], [0, 1, 1], [1, 1, 1], 100, 0.5)
-    objects = [sphere_a,triangle,plane,background]
-    light_a = PointLight(intensity= np.array([1, 1, 1]),position=np.array([1,1.5,1]),kc=0.1,kl=0.1,kq=0.1)
-    light_b = SpotLight(intensity= np.array([1, 0, 0]),position=np.array([0,-0.5,0]), direction=([0,0,1]),
-                        kc=0.1,kl=0.1,kq=0.1)
+    objects = [sphere_a, plane, mesh, background]
+    light_a = PointLight(intensity=np.array([1, 1, 1]), position=np.array([1, 1.5, 1]), kc=0.1, kl=0.1, kq=0.1)
+    light_b = SpotLight(intensity=np.array([1, 0, 0]), position=np.array([0, -0.5, 0]), direction=([0, 0, 1]),
+                        kc=0.1, kl=0.1, kq=0.1)
 
-    lights = [light_a,light_b]
-    ambient = np.array([0.1,0.2,0.3])
+    lights = [light_a, light_b]
+    ambient = np.array([0.1, 0.2, 0.3])
 
-    camera = np.array([0,0,1])
+    camera = np.array([0, 0, 1])
     return camera, lights, objects, ambient
 
 # def get_diffuse(nearest_object,)
