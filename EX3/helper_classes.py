@@ -16,11 +16,6 @@ def reflected(vector, normal):
     return v
 
 
-# Lights
-
-# !! DO NOT CHANGE HERE !!
-
-
 class LightSource:
 
     def __init__(self, intensity):
