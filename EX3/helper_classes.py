@@ -265,7 +265,8 @@ def get_color(curr_ray, ambient, lights, objects, depth_level, max_depth, normal
     ambient_color = nearest_object.ambient * ambient
     reflective_rec_calc = 0
     color += ambient_color
-
+    if isinstance(nearest_object, Sphere):
+        normal_to_surface = normalize(curr_intersection_point - nearest_object.center)
     for light in lights:
         # get the ray from the curr_intersection_point
         ray_to_light = light.get_light_ray(curr_intersection_point)

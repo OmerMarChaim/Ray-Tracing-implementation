@@ -24,8 +24,8 @@ def render_scene(camera, ambient, lights, objects, screen_size, max_depth):
             nearest_object, min_distance = scene_ray.nearest_intersected_object(objects)
             if nearest_object is None:
                 continue
-            intersection_point = scene_ray.get_intersection_point(min_distance - EPSILON)
             # According to the last tip - shift the point in the direction on epsilon normal
+            intersection_point = scene_ray.get_intersection_point(min_distance - EPSILON)
             normal_to_surface = normalize(nearest_object.get_normal())
             if isinstance(nearest_object, Sphere):
                 normal_to_surface = normalize(intersection_point - nearest_object.center)
@@ -41,8 +41,6 @@ def render_scene(camera, ambient, lights, objects, screen_size, max_depth):
 # Write your own objects and lights
 def your_own_scene():
     camera = np.array([0, 0, 1])
-    lights = []
-    objects = []
     sphere_a = Sphere([-0.5, 0.2, -1], 0.5)
     sphere_a.set_material([1, 0, 1], [1, 0, 1], [0.3, 0.3, 0.3], 100, 1)
     background = Plane([0, 0, 1], [5, 5, -8])
@@ -55,15 +53,14 @@ def your_own_scene():
     mesh.apply_materials_to_triangles()
     plane = Plane([0, 0, 1], [0, 0, -3])
     plane.set_material([0, 0.5, 0], [0, 1, 1], [1, 1, 1], 100, 0.5)
-    objects = [sphere_a, plane, mesh, background]
     light_a = PointLight(intensity=np.array([1, 1, 1]), position=np.array([1, 1.5, 1]), kc=0.1, kl=0.1, kq=0.1)
     light_b = SpotLight(intensity=np.array([1, 0, 0]), position=np.array([0, -0.5, 0]), direction=([0, 0, 1]),
                         kc=0.1, kl=0.1, kq=0.1)
 
     lights = [light_a, light_b]
-    ambient = np.array([0.1, 0.2, 0.3])
+    objects = [sphere_a, plane, mesh, background]
 
-    camera = np.array([0, 0, 1])
-    return camera, lights, objects, ambient
+    # ambient = np.array([0.1, 0.2, 0.3])
 
-# def get_diffuse(nearest_object,)
+    return camera, lights, objects
+
