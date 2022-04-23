@@ -2,7 +2,6 @@ from numpy import intersect1d
 from helper_classes import *
 import matplotlib.pyplot as plt
 
-# EPSILON = 1e-5
 EPSILON = 0.00001
 
 
@@ -31,8 +30,8 @@ def render_scene(camera, ambient, lights, objects, screen_size, max_depth):
             if isinstance(nearest_object, Sphere):
                 normal_to_surface = normalize(intersection_point - nearest_object.center)
 
-            color = get_color(scene_ray, ambient, lights, objects, 1, max_depth, camera,
-                              normal_to_surface, intersection_point, nearest_object)
+            color = get_color(scene_ray, ambient, lights, objects, 1, max_depth, normal_to_surface, intersection_point,
+                              nearest_object)
 
             image[i, j] = np.clip(color, 0, 1)
 
@@ -45,11 +44,9 @@ def your_own_scene():
     lights = []
     objects = []
     sphere_a = Sphere([-0.5, 0.2, -1], 0.5)
-    sphere_a.set_material([1, 0, 0], [1, 0, 0], [0.3, 0.3, 0.3], 100, 1)
+    sphere_a.set_material([1, 0, 1], [1, 0, 1], [0.3, 0.3, 0.3], 100, 1)
     background = Plane([0, 0, 1], [5, 5, -8])
     background.set_material([0.2, 0.2, 0.2], [0.2, 0.2, 0.2], [0.2, 0.2, 0.2], 1000, 0.5)
-    # triangle = Triangle([1, -1, -2], [0, 1, -1.5], [0, -1, -1])
-    # triangle.set_material([1, 1, 0], [1, 1, 0], [0, 1, 0], 100, 0.5)
     v_list = np.array([[-1, -1, -2], [1, -1, -2], [0, -1, -1], [0, 1, -1.5]])
     f_list = np.array([[0, 2, 1], [0, 1, 3], [0, 2, 3], [1, 3, 2]])
 
